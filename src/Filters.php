@@ -92,7 +92,7 @@ class Filters
                 return $key;
             }
 
-            return substr_replace($key, "", -1, strlen($suffix));
+            return substr_replace($key, "", -strlen($suffix));
         }, $filters);
     }
 
