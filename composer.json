@@ -1,0 +1,31 @@
+{
+    "name": "3amprogrammer/phalcon-filters",
+    "description": "Simple package for filtering models in Phalcon 3.",
+    "keywords": ["model", "filter", "filterable", "searchable", "query"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Kamil Latosiński",
+            "email": "kamil.latosinski@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^6.1",
+        "phalcon/incubator": "^3.1",
+        "phalcon/devtools": "^3.1",
+        "league/factory-muffin": "^3.0",
+        "league/factory-muffin-faker": "^2.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "PhalconFilters\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PhalconFilters\\Tests\\": "tests/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
