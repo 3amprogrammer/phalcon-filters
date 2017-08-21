@@ -4,12 +4,15 @@ namespace PhalconFilters\Tests\Unit;
 
 use Phalcon\Mvc\Model\Query\Builder;
 use PhalconFilters\Filters;
+use PhalconFilters\Tests\Stubs\Address;
 use PhalconFilters\Tests\Stubs\Profile;
 use PhalconFilters\Tests\Stubs\User;
 use PhalconFilters\Tests\TestCase;
 
 class FiltersTest extends TestCase
 {
+    const SUCCESS = true;
+
     /**
      * @param Builder $builder
      * @param string $expected
@@ -101,6 +104,26 @@ class FiltersTest extends TestCase
             "first_name" => "John",
         ], $bindParams);
         $this->assertNotContains("some_filter_value", $bindParams);
+    }
+
+    /**
+     * @test
+     */
+    public function Apply_SingleJoinedTable_WithoutCorrespondingFilterClass_DoesNotThrowException()
+    {
+        $builder = (new Builder())
+            ->columns("u.*")
+            ->from(User::class)
+            ->innerJoin(Address::class);
+
+        $request = [
+            "user_email" => "john@doe.com",
+            "address_zip" => "00-000"
+        ];
+
+        Filters::apply($builder, $request);
+
+        $this->assertTrue(self::SUCCESS);
     }
 
     public function differentFromFormats()

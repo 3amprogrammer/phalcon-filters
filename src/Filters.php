@@ -4,16 +4,17 @@ namespace PhalconFilters;
 
 use Phalcon\Mvc\Model\Query\Builder;
 use PhalconFilters\Support\Arr;
+use PhalconFilters\Support\Str;
 use ReflectionClass;
 
 class Filters
 {
     /**
      * @param Builder $builder
-     * @param array $filters
+     * @param array $request
      * @return Builder
      */
-    public static function apply(Builder $builder, array $filters): Builder
+    public static function apply(Builder $builder, array $request): Builder
     {
         $from = (array)$builder->getFrom();
         $joins = (array)$builder->getJoins();
@@ -42,14 +43,24 @@ class Filters
 
 
         foreach ($tables as $table) {
-
             $model = new ReflectionClass($table["model"]);
+
+            $relatedFilters = self::extractRelatedFilters($model, $request);
+
+            if(empty($relatedFilters)) {
+                continue;
+            }
+
             $filterClass = self::getFilterClass($model);
 
-            $relatedFilters = self::extractRelatedFilters($model, $filters);
+            if (!class_exists($filterClass)) {
+                continue;
+            }
+
+            $filters = self::removeIdSuffix($relatedFilters);
 
             /** @var QueryFilters $filter */
-            $filter = new $filterClass($table["alias"], $relatedFilters);
+            $filter = new $filterClass($table["alias"], $filters);
             $filter->apply($builder);
         }
 
@@ -62,13 +73,26 @@ class Filters
 
         $relatedFilters = Arr::preg_grep_keys("!^{$prefix}!", $filters);
 
-        return self::removePrefix($relatedFilters, $prefix);
+        return self::removeModelPrefix($relatedFilters, $prefix);
     }
 
-    private static function removePrefix(array $filters, string $prefix): array
+    private static function removeModelPrefix(array $filters, string $prefix): array
     {
         return Arr::map_keys(function ($key) use ($prefix) {
             return substr_replace($key, "", 0, strlen($prefix));
+        }, $filters);
+    }
+
+    private static function removeIdSuffix(array $filters): array
+    {
+        return Arr::map_keys(function ($key) {
+            $suffix = "_id";
+
+            if (!Str::endsWith($key, $suffix)) {
+                return $key;
+            }
+
+            return substr_replace($key, "", -1, strlen($suffix));
         }, $filters);
     }
 
